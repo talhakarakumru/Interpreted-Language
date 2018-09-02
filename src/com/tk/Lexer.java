@@ -99,10 +99,11 @@ public class Lexer
             else if(ch == '*' && key.isEmpty() && temp.isEmpty())
                 return new Pair<>("MULTIPLY", "*");
 
-            // DIVIDE
+            // Divide
             else if(ch == '/' && key.isEmpty() && temp.isEmpty())
                 return new Pair<>("DIVIDE", "/");
 
+            // Comma
             else if(ch == ',' && key.isEmpty() && temp.isEmpty())
                 return new Pair<>("COMMA", ",");
 
