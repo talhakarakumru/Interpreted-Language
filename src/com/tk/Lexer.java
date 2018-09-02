@@ -103,6 +103,9 @@ public class Lexer
             else if(ch == '/' && key.isEmpty() && temp.isEmpty())
                 return new Pair<>("DIVIDE", "/");
 
+            else if(ch == ',' && key.isEmpty() && temp.isEmpty())
+                return new Pair<>("COMMA", ",");
+
             // Number
             else if(Character.isDigit(ch) && key.isEmpty() && temp.isEmpty())
             {
@@ -119,7 +122,7 @@ public class Lexer
                     return new Pair<>(temp.toUpperCase(), temp.toUpperCase());
 
                 // ID
-                else if(checkNext(new char[]{ '\n', '\"', '(', ')', ':', '=', '>', '<', '!', '+', '-', '*', '/' }) && !key.equals("STRING"))
+                else if(checkNext(new char[]{ '\n', '\"', '(', ')', ':', '=', '>', '<', '!', '+', '-', '*', '/', ',' }) && !key.equals("STRING"))
                     return new Pair<>("ID", temp);
             }
         }

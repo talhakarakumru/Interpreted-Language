@@ -28,7 +28,7 @@ def main():
     print()
 end
 
-def print():
+def print(param1, param2):
     echo "Second Echo..."
     echo "Third Echo..."
 end
