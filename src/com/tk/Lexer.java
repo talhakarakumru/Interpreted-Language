@@ -45,6 +45,9 @@ public class Lexer
             {
                 if(key.equals("STRING"))
                     temp += ch;
+
+                else if(ch == '\n' && key.isEmpty() && temp.isEmpty())
+                    return new Pair<>("NEW_LINE", "new_line");
             }
 
             else if(ch == '\"')
