@@ -17,27 +17,40 @@ public class Parser
         this.lexer = lexer;
     }
 
+    private String error(String msg)
+    {
+        return String.format("[ERROR]: %s at line %d.", msg, lexer.getCurrentLine());
+    }
+
     public LinkedList<Node> buildAST()
     {
         LinkedList<Node> ast = new LinkedList<>();
-        Pair<String, String> token;
-
-        Node superNode = null;
+        Pair<String, String> token = null;
 
         System.out.println("TOKENS:");
 
         do
         {
-            token = lexer.getNextToken();
+            try
+            {
+                token = lexer.getNextToken();
 
-            // Print the token
-            System.out.println(String.format("\t{ \"%s\": \"%s\" }", token.getKey(), token.getValue()));
+                // Print the token
+                System.out.println(String.format("\t{ \"%s\": \"%s\" }", token.getKey(), token.getValue()));
 
-            String key = token.getKey();
-            String value = token.getValue();
+                String key = token.getKey();
+                String value = token.getValue();
 
-            if(key.equals("DEF"))
-                ast.add(function(superNode));
+                if (key.equals("DEF"))
+                    ast.add(function(null));
+            }
+
+
+            catch(Exception e)
+            {
+                System.out.println(e.getMessage());
+                System.exit(1);
+            }
         }
 
         while(!token.getKey().equals("EOF"));
@@ -52,33 +65,42 @@ public class Parser
         LinkedList<Node> nodes = new LinkedList<>();
         Node superNode = node;
 
-        Pair<String, String> token;
+        Pair<String, String> token = null;
 
         do
         {
-            token = lexer.getNextToken();
-
-            if(token.equals("EOF"))
-                return null;
-
-            // Print the token
-            System.out.println(String.format("\t{ \"%s\": \"%s\" }", token.getKey(), token.getValue()));
-
-            String key = token.getKey();
-            String value = token.getValue();
-
-            if(key.equals("ECHO"))
-                nodes.add(echo(superNode));
-
-            else if(key.equals("ID"))
-               nodes.add(id(superNode, value));
-
-            else if(key.equals("END"))
+            try
             {
-                if(!superNode.equals(node))
-                    superNode = superNode.getSuperNode();
+                token = lexer.getNextToken();
 
-                else return nodes;
+                if(token.equals("EOF"))
+                    return null;
+
+                // Print the token
+                System.out.println(String.format("\t{ \"%s\": \"%s\" }", token.getKey(), token.getValue()));
+
+                String key = token.getKey();
+                String value = token.getValue();
+
+                if(key.equals("ECHO"))
+                    nodes.add(echo(superNode));
+
+                else if(key.equals("ID"))
+                    nodes.add(id(superNode, value));
+
+                else if(key.equals("END"))
+                {
+                    if(!superNode.equals(node))
+                        superNode = superNode.getSuperNode();
+
+                    else return nodes;
+                }
+            }
+
+            catch(Exception e)
+            {
+                System.out.println(e.getMessage());
+                System.exit(1);
             }
         }
 
@@ -87,7 +109,7 @@ public class Parser
         return null;
     }
 
-    private Pair<String, String> checkNextToken(String key)
+    private Pair<String, String> checkNextToken(String key) throws Exception
     {
         Pair<String, String> token = lexer.getNextToken();
 
@@ -99,7 +121,7 @@ public class Parser
         return null;
     }
 
-    private Pair<String, String> checkNextToken(String keys[])
+    private Pair<String, String> checkNextToken(String keys[]) throws Exception
     {
         Pair<String, String> token = lexer.getNextToken();
 
@@ -112,16 +134,25 @@ public class Parser
         return null;
     }
 
-    private Function function(Node superNode)
+    private Function function(Node superNode) throws Exception
     {
         Function f = null;
 
         Pair<String, String> idToken = checkNextToken("ID");
-        assert idToken != null;
+        if(idToken == null)
+            return null;
 
-        assert checkNextToken("L_PARENT") != null;
-        assert checkNextToken("R_PARENT") != null;
-        assert checkNextToken("COLON") != null;
+        if(checkNextToken("L_PARENT") == null)
+            throw new Exception(error("Missing left parenthesis"));
+
+        if(checkNextToken("R_PARENT") == null)
+            throw new Exception(error("Missing right parenthesis"));
+
+        if(checkNextToken("COLON") == null)
+            throw new Exception(error("Missing colon"));
+
+       if(checkNextToken("NEW_LINE") == null)
+           throw new Exception(error("Functions have to end with a new line"));
 
         f = new Function(superNode, idToken.getValue());
         f.setSubNodes(subNodes(f));
@@ -131,17 +162,20 @@ public class Parser
         return f;
     }
 
-    private Echo echo(Node superNode)
+    private Echo echo(Node superNode) throws Exception
     {
         Pair<String, String> contentToken = checkNextToken(new String[]{ "STRING", "NUMBER", "ID" });
 
-        assert contentToken != null;
-        assert checkNextToken("NEW_LINE") != null;
+        if(contentToken == null)
+            throw new Exception(error("There is no value for echo"));
+
+        if(checkNextToken("NEW_LINE") == null)
+            throw new Exception(error("Echos have to end with a new line"));
 
         return new Echo(superNode, contentToken.getValue());
     }
 
-    private Node id(Node superNode, String value)
+    private Node id(Node superNode, String value) throws Exception
     {
         if(checkNextToken("L_PARENT") != null)
             return call(superNode, value);
@@ -149,10 +183,13 @@ public class Parser
         return null;
     }
 
-    private Call call(Node superNode, String id)
+    private Call call(Node superNode, String id) throws Exception
     {
-        assert checkNextToken("RIGHT_PARENT") != null;
-        assert checkNextToken("NEW_LINE") != null;
+        if(checkNextToken("R_PARENT") == null)
+            throw new Exception(error("Missing right parenthesis"));
+
+        if(checkNextToken("NEW_LINE") == null)
+            throw new Exception(error("Function calls have to end with new line"));
 
         return new Call(superNode, id);
     }

@@ -1,18 +1,3 @@
 def main():
-    echo "Hi!"
-    echo "Second echo"
-
-    print()
-end
-
-def print():
-    echo "Print Function"
-
-    forBaha()
-end
-
-def forBaha()
-    echo "This is for baha."
-
-    echo "Baha Karakumru"
+    echo Hi!"
 end

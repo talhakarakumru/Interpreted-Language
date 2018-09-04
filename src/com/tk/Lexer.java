@@ -10,12 +10,17 @@ public class Lexer
     private String code;
     private int currentIndex;
 
+    private Pair<String, String> currentToken;
+    private int currentLine;
+
     public Lexer(String code)
     {
         this.code = code;
         this.currentIndex = 0;
 
         setKeywords();
+
+        this.currentLine = 1;
     }
 
     private void setKeywords()
@@ -32,7 +37,12 @@ public class Lexer
         keywords.put("OR", "or");
     }
 
-    public Pair<String, String> getNextToken()
+    private String error(String msg)
+    {
+        return String.format("[ERROR]: %s at line %d.", msg, getCurrentLine());
+    }
+
+    public Pair<String, String> getNextToken() throws Exception
     {
         String key = "";
         String temp = "";
@@ -47,7 +57,13 @@ public class Lexer
                     temp += ch;
 
                 else if(ch == '\n' && key.isEmpty() && temp.isEmpty())
-                    return new Pair<>("NEW_LINE", "new_line");
+                {
+                    currentLine++;
+                    return currentToken = new Pair<>("NEW_LINE", "new_line");
+                }
+
+                else if(ch != ' ')
+                    throw new Exception(error("Invalid usage"));
             }
 
             else if(ch == '\"')
@@ -59,62 +75,64 @@ public class Lexer
                 // String begins
                 else if(temp.isEmpty())
                     key = "STRING";
+
+                else throw new Exception(error("Invalid usage"));
             }
 
             // Left parenthesis
             else if(ch == '(' && key.isEmpty() && temp.isEmpty())
-                return new Pair<>("L_PARENT", "(");
+                return currentToken = new Pair<>("L_PARENT", "(");
 
 
             // Right parenthesis
             else if(ch == ')' && key.isEmpty() && temp.isEmpty())
-                return new Pair<>("R_PARENT", ")");
+                return currentToken = new Pair<>("R_PARENT", ")");
 
             // Colon
             else if(ch == ':' && key.isEmpty() && temp.isEmpty())
-                return new Pair<>("COLON", ":");
+                return currentToken = new Pair<>("COLON", ":");
 
             // Equals
             else if(ch == '=' && key.isEmpty() && temp.isEmpty())
-                return new Pair<>("EQUALS", "=");
+                return currentToken = new Pair<>("EQUALS", "=");
 
             // Greater
             else if(ch == '>' && key.isEmpty() && temp.isEmpty())
-                return new Pair<>("GREATER", ">");
+                return currentToken = new Pair<>("GREATER", ">");
 
              // Less
             else if(ch == '<' && key.isEmpty() && temp.isEmpty())
-                return new Pair<>("LESS", "<");
+                return currentToken = new Pair<>("LESS", "<");
 
             // Not
             else if(ch == '!' && key.isEmpty() && temp.isEmpty())
-                return new Pair<>("NOT", "!");
+                return currentToken = new Pair<>("NOT", "!");
 
             // Plus
             else if(ch == '+' && key.isEmpty() && temp.isEmpty())
-                return new Pair<>("PLUS", "+");
+                return currentToken = new Pair<>("PLUS", "+");
 
             // Minus
             else if(ch == '-' && key.isEmpty() && temp.isEmpty())
-                return new Pair<>("MINUS", "-");
+                return currentToken = new Pair<>("MINUS", "-");
 
             // Multiply
             else if(ch == '*' && key.isEmpty() && temp.isEmpty())
-                return new Pair<>("MULTIPLY", "*");
+                return currentToken = new Pair<>("MULTIPLY", "*");
 
             // Divide
             else if(ch == '/' && key.isEmpty() && temp.isEmpty())
-                return new Pair<>("DIVIDE", "/");
+                return currentToken = new Pair<>("DIVIDE", "/");
 
             // Comma
             else if(ch == ',' && key.isEmpty() && temp.isEmpty())
-                return new Pair<>("COMMA", ",");
+                return currentToken = new Pair<>("COMMA", ",");
 
             // Number
             else if(Character.isDigit(ch) && key.isEmpty() && temp.isEmpty())
             {
                 currentIndex--;
-                return new Pair<>("NUMBER", number());
+                return currentToken =new Pair<>("NUMBER", number());
             }
 
             else
@@ -123,16 +141,24 @@ public class Lexer
 
                 // Keyword
                 if(keywords.get(temp.toUpperCase()) != null && key.isEmpty())
-                    return new Pair<>(temp.toUpperCase(), temp.toUpperCase());
+                    return currentToken = new Pair<>(temp.toUpperCase(), temp.toUpperCase());
 
                 // ID
-                else if(checkNext(new char[]{ '\n', '\"', '(', ')', ':', '=', '>', '<', '!', '+', '-', '*', '/', ',' }) && !key.equals("STRING"))
-                    return new Pair<>("ID", temp);
+                else if(checkNext(new char[]{ '\n', '(', ')', ':', '=', '>', '<', '!', '+', '-', '*', '/', ',' }, true) && !key.equals("STRING"))
+                {
+                    // Check if the id is invalid.
+                    char nextChar = currentIndex < code.length() ? code.charAt(currentIndex + 1) : ' ';
+
+                    if(nextChar != '\"')
+                        return currentToken = new Pair<>("ID", temp);
+
+                    else throw new Exception(error("Invalid id has been used"));
+                }
             }
         }
 
         // End of the code.
-        return new Pair<>("EOF", "EOF");
+        return currentToken = new Pair<>("EOF", "EOF");
     }
 
     private String number()
@@ -155,13 +181,13 @@ public class Lexer
         return num;
     }
 
-    private boolean checkNext(char arr[])
+    private boolean checkNext(char arr[], boolean ignoreWhitespace)
     {
         int index = 0;
 
         while(currentIndex + index < code.length())
         {
-            if(code.charAt(currentIndex + index) == ' ')
+            if(code.charAt(currentIndex + index) == ' ' && ignoreWhitespace)
                 index++;
 
             else
@@ -178,4 +204,11 @@ public class Lexer
 
         return false;
     }
+
+    //region Getters and Setters
+    public int getCurrentLine()
+    {
+        return currentToken.getKey().equals("NEW_LINE") ? currentLine - 1 : currentLine;
+    }
+    //ednregion
 }
