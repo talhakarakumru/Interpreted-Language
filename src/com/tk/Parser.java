@@ -43,6 +43,9 @@ public class Parser
 
                 if (key.equals("DEF"))
                     ast.add(function(null));
+
+                else if(!key.equals("NEW_LINE") && !key.equals("EOF"))
+                    throw new Exception(error("Invalid usage"));
             }
 
 
@@ -73,9 +76,6 @@ public class Parser
             {
                 token = lexer.getNextToken();
 
-                if(token.equals("EOF"))
-                    return null;
-
                 // Print the token
                 System.out.println(String.format("\t{ \"%s\": \"%s\" }", token.getKey(), token.getValue()));
 
@@ -95,6 +95,9 @@ public class Parser
 
                     else return nodes;
                 }
+
+                else if(!key.equals("NEW_LINE") && !key.equals("EOF"))
+                    throw new Exception(error("Invalid usage"));
             }
 
             catch(Exception e)

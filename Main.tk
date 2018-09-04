@@ -1,3 +1,4 @@
 def main():
-    echo Hi!"
+    echo "OK"
+    echo "OK 2"
 end

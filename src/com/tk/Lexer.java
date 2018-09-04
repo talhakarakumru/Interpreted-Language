@@ -141,7 +141,11 @@ public class Lexer
 
                 // Keyword
                 if(keywords.get(temp.toUpperCase()) != null && key.isEmpty())
-                    return currentToken = new Pair<>(temp.toUpperCase(), temp.toUpperCase());
+                {
+                    // Check if whitespace or next line come after the keyword.
+                    if(checkNext(new char[]{ ' ', '\n' }, false))
+                        return currentToken = new Pair<>(temp.toUpperCase(), temp.toUpperCase());
+                }
 
                 // ID
                 else if(checkNext(new char[]{ '\n', '(', ')', ':', '=', '>', '<', '!', '+', '-', '*', '/', ',' }, true) && !key.equals("STRING"))
