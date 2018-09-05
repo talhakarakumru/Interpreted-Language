@@ -1,4 +1,9 @@
+number = 100
+
 def main():
-    echo "OK"
-    echo "OK 2"
+    print()
+end
+
+def print():
+    echo number
 end

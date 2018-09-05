@@ -11,7 +11,7 @@ public class Lexer
     private int currentIndex;
 
     private Pair<String, String> currentToken;
-    private int currentLine;
+    public static int currentLine;
 
     public Lexer(String code)
     {
@@ -35,6 +35,8 @@ public class Lexer
         keywords.put("ELSE", "else");
         keywords.put("AND", "and");
         keywords.put("OR", "or");
+        keywords.put("TRUE", "true");
+        keywords.put("FALSE", "false");
     }
 
     private String error(String msg)
@@ -51,6 +53,7 @@ public class Lexer
         {
             char ch = code.charAt(currentIndex++);
 
+            // TODO: When programmer use Sublime Text and input a tab space it does not catches it, chance trim that used for keywords after fixing it.
             if(ch == ' ' || ch == '\n')
             {
                 if(key.equals("STRING"))
@@ -82,7 +85,6 @@ public class Lexer
             // Left parenthesis
             else if(ch == '(' && key.isEmpty() && temp.isEmpty())
                 return currentToken = new Pair<>("L_PARENT", "(");
-
 
             // Right parenthesis
             else if(ch == ')' && key.isEmpty() && temp.isEmpty())
@@ -132,7 +134,12 @@ public class Lexer
             else if(Character.isDigit(ch) && key.isEmpty() && temp.isEmpty())
             {
                 currentIndex--;
-                return currentToken =new Pair<>("NUMBER", number());
+                String num = number();
+
+                if(num != null)
+                    return currentToken = new Pair<>("NUMBER", num);
+
+                else temp += ch;
             }
 
             else
@@ -140,20 +147,20 @@ public class Lexer
                 temp += ch;
 
                 // Keyword
-                if(keywords.get(temp.toUpperCase()) != null && key.isEmpty())
+                if(keywords.get(temp.trim().toUpperCase()) != null && key.isEmpty())
                 {
                     // Check if whitespace or next line come after the keyword.
                     if(checkNext(new char[]{ ' ', '\n' }, false))
-                        return currentToken = new Pair<>(temp.toUpperCase(), temp.toUpperCase());
+                        return currentToken = new Pair<>(temp.trim().toUpperCase(), temp.trim());
                 }
 
                 // ID
                 else if(checkNext(new char[]{ '\n', '(', ')', ':', '=', '>', '<', '!', '+', '-', '*', '/', ',' }, true) && !key.equals("STRING"))
                 {
                     // Check if the id is invalid.
-                    char nextChar = currentIndex < code.length() ? code.charAt(currentIndex + 1) : ' ';
+                    char nextChar = currentIndex + 1 < code.length() ? code.charAt(currentIndex + 1) : ' ';
 
-                    if(nextChar != '\"')
+                    if(nextChar != '\"' && temp.matches("[a-zA-Z_][a-zA-Z0-9_]*"))
                         return currentToken = new Pair<>("ID", temp);
 
                     else throw new Exception(error("Invalid id has been used"));
@@ -180,12 +187,23 @@ public class Lexer
                 num += ch;
 
             ch = code.charAt(++currentIndex);
+
+            // Check if next character is not invalid.
+            for(char c : new char[]{ '(', ')', ':', '=', ',' })
+            {
+                if(c == ch)
+                    return null;
+            }
+
+            if(Character.isAlphabetic(ch))
+                return null;
+            // ---------------------------------------
         }
 
         return num;
     }
 
-    private boolean checkNext(char arr[], boolean ignoreWhitespace)
+    public boolean checkNext(char arr[], boolean ignoreWhitespace)
     {
         int index = 0;
 

@@ -1,16 +1,14 @@
-package com.tk;
+package com.tk.nodes;
 
-public class Variable <T>
+public class Variable <T> extends Node
 {
     private String id;
     private T value;
-    private Type type;
 
-    public Variable(String id, T value, Type type)
+    public Variable(String id)
     {
+        super(Type.VARIABLE, null);
         this.id = id;
-        this.value = value;
-        this.type = type;
     }
 
     @Override
@@ -20,7 +18,7 @@ public class Variable <T>
         {
             Variable other = (Variable) obj;
 
-            if(value.equals(other.getValue()))
+            if(id.equals(other.getId()))
                 return true;
         }
 
@@ -48,20 +46,10 @@ public class Variable <T>
         this.value = value;
     }
 
-    public Type getType()
+    @Override
+    public void run()
     {
-        return type;
-    }
 
-    public void setType(Type type)
-    {
-        this.type = type;
     }
     //endregion
-
-    public enum Type
-    {
-        STRING,
-        NUMBER
-    }
 }

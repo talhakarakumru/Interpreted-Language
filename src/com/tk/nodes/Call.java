@@ -16,7 +16,7 @@ public class Call extends Node
     }
 
     @Override
-    public void run()
+    public void run() throws Exception
     {
         Function f;
 

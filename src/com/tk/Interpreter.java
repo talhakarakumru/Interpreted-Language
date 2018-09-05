@@ -2,6 +2,7 @@ package com.tk;
 
 import com.tk.nodes.Function;
 import com.tk.nodes.Node;
+import com.tk.nodes.Variable;
 
 import java.util.LinkedList;
 
@@ -30,13 +31,22 @@ public class Interpreter
         {
 //            System.out.println(node.getType() + ": " + node.getSubNodes().size());
 
-            if(node.getType() == Node.Type.FUNCTION)
+            try
             {
-                if(((Function) node).getId().equals("main"))
-                    node.run();
+                if(node.getType() == Node.Type.FUNCTION)
+                {
+                    if(((Function) node).getId().equals("main"))
+                        node.run();
+                }
+
+                else node.run();
             }
 
-            else node.run();
+            catch(Exception e)
+            {
+                System.out.println(e.getMessage());
+                System.exit(1);
+            }
         }
 
         System.out.println("----------------------------------------------------");

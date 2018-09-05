@@ -15,7 +15,7 @@ public abstract class Node
         this.subNodes = new LinkedList<>();
     }
 
-    abstract public void run();
+    abstract public void run() throws Exception;
 
     public void addSubNode(Node node)
     {
@@ -48,6 +48,10 @@ public abstract class Node
     {
         FUNCTION,
         ECHO,
-        CALL
+        CALL,
+        ASSIGNMENT,
+        VARIABLE,
+        EXPRESSION,
+        TEXT
     }
 }

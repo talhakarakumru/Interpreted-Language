@@ -1,7 +1,5 @@
 package com.tk.nodes;
 
-import com.tk.Variable;
-
 import java.util.LinkedList;
 
 public class Function extends Node
@@ -18,10 +16,24 @@ public class Function extends Node
     }
 
     @Override
-    public void run()
+    public void run() throws Exception
     {
         for(Node subNode : subNodes)
             subNode.run();
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if(obj instanceof Function)
+        {
+            Function f = (Function) obj;
+
+            if(id.equals(f.getId()))
+                return true;
+        }
+
+        return false;
     }
 
     public void addVar(Variable var)

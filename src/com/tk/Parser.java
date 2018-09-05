@@ -1,9 +1,6 @@
 package com.tk;
 
-import com.tk.nodes.Call;
-import com.tk.nodes.Echo;
-import com.tk.nodes.Function;
-import com.tk.nodes.Node;
+import com.tk.nodes.*;
 import javafx.util.Pair;
 
 import java.util.LinkedList;
@@ -43,6 +40,9 @@ public class Parser
 
                 if (key.equals("DEF"))
                     ast.add(function(null));
+
+                else if(key.equals("ID"))
+                    ast.add(id(null, value));
 
                 else if(!key.equals("NEW_LINE") && !key.equals("EOF"))
                     throw new Exception(error("Invalid usage"));
@@ -142,6 +142,7 @@ public class Parser
         Function f = null;
 
         Pair<String, String> idToken = checkNextToken("ID");
+
         if(idToken == null)
             return null;
 
@@ -160,14 +161,20 @@ public class Parser
         f = new Function(superNode, idToken.getValue());
         f.setSubNodes(subNodes(f));
 
-        Interpreter.globalFunctionScope.add(f);
+        // Check if function does not already exist.
+        if(!Interpreter.globalFunctionScope.contains(f))
+            Interpreter.globalFunctionScope.add(f);
+
+        else throw new Exception("You cannot have same function.");
 
         return f;
     }
 
     private Echo echo(Node superNode) throws Exception
     {
-        Pair<String, String> contentToken = checkNextToken(new String[]{ "STRING", "NUMBER", "ID" });
+        Pair<String, String> contentToken = checkNextToken(new String[]{ "STRING", "NUMBER", "TRUE", "FALSE", "ID" });
+        String key = contentToken.getKey();
+        String value = contentToken.getValue();
 
         if(contentToken == null)
             throw new Exception(error("There is no value for echo"));
@@ -175,13 +182,36 @@ public class Parser
         if(checkNextToken("NEW_LINE") == null)
             throw new Exception(error("Echos have to end with a new line"));
 
-        return new Echo(superNode, contentToken.getValue());
+        if(key.equals("ID"))
+            return new Echo(superNode, new Variable(value));
+
+        return new Echo(superNode, new Text(value));
     }
 
     private Node id(Node superNode, String value) throws Exception
     {
-        if(checkNextToken("L_PARENT") != null)
-            return call(superNode, value);
+        Pair<String, String> token = checkNextToken(new String[]{ "L_PARENT", "EQUALS" });
+
+        if(token != null)
+        {
+            String key = token.getKey();
+
+            // Function call.
+            if(key.equals("L_PARENT"))
+                return call(superNode, value);
+
+            // Check if an assignment or a statement.
+            else if(key.equals("EQUALS"))
+            {
+                // Statement
+                if(lexer.checkNext(new char[]{ '=' }, true));
+
+                // Assignment
+                else return assignment(superNode, value);
+            }
+
+            else throw new Exception(error("Invalid id usage"));
+        }
 
         return null;
     }
@@ -195,5 +225,28 @@ public class Parser
             throw new Exception(error("Function calls have to end with new line"));
 
         return new Call(superNode, id);
+    }
+
+    private Assignment assignment(Node superNode, String id) throws Exception
+    {
+        Pair<String, String> token;
+
+        token = checkNextToken(new String[]{ "STRING", "NUMBER", "BOOLEAN" });
+
+
+        // TODO: This sets variables as string. It is not good.
+        if(token != null)
+        {
+            String key = token.getKey();
+            String value = token.getValue();
+
+            if(key.equals("STRING") || key.equals("BOOLEAN"))
+                return new Assignment(superNode, new Variable<String>(id), new Text(value));
+
+            if(key.equals("NUMBER"))
+                return new Assignment(superNode, new Variable<Double>(id), new Expression(Double.parseDouble(value)));
+    }
+
+        throw new Exception(error("Invalid assignment"));
     }
 }
