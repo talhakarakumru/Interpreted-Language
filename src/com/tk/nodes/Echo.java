@@ -1,7 +1,6 @@
 package com.tk.nodes;
 
 import com.tk.Interpreter;
-import com.tk.Lexer;
 
 public class Echo extends Node
 {
@@ -26,6 +25,8 @@ public class Echo extends Node
         else if(content instanceof Variable)
         {
             Variable variable = (Variable) content;
+
+            System.out.println(variable.getId());
 
             // TODO: Fix this to make sure it gets one more step to another super node.
             // Check if it has a super node.
@@ -59,6 +60,9 @@ public class Echo extends Node
                 throw new Exception("Uninitialized variable was used.");
             }
         }
+
+        else if(content instanceof Expression)
+            System.out.println(((Expression) content).getValue());
     }
 
     //region Getters and Setters

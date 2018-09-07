@@ -16,7 +16,7 @@ public class Assignment extends Node
     }
 
     @Override
-    public void run()
+    public void run() throws Exception
     {
         Variable var = (Variable) left;
 

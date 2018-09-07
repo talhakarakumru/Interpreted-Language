@@ -1,9 +1,5 @@
-number = 100
-
 def main():
-    print()
-end
+    a = 100 * (1 + 2) * 20
+    echo a
 
-def print():
-    echo number
 end

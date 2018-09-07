@@ -155,13 +155,13 @@ public class Lexer
                 }
 
                 // ID
-                else if(checkNext(new char[]{ '\n', '(', ')', ':', '=', '>', '<', '!', '+', '-', '*', '/', ',' }, true) && !key.equals("STRING"))
+                else if(checkNext(new char[]{ '\n', '(', ')', ':', '=', '>', '<', '!', '+', '-', '*', '/', ',', ' ' }, false) && !key.equals("STRING"))
                 {
                     // Check if the id is invalid.
                     char nextChar = currentIndex + 1 < code.length() ? code.charAt(currentIndex + 1) : ' ';
 
-                    if(nextChar != '\"' && temp.matches("[a-zA-Z_][a-zA-Z0-9_]*"))
-                        return currentToken = new Pair<>("ID", temp);
+                    if(nextChar != '\"' && temp.trim().matches("[a-zA-Z_][a-zA-Z0-9_]*"))
+                        return currentToken = new Pair<>("ID", temp.trim());
 
                     else throw new Exception(error("Invalid id has been used"));
                 }
@@ -189,7 +189,7 @@ public class Lexer
             ch = code.charAt(++currentIndex);
 
             // Check if next character is not invalid.
-            for(char c : new char[]{ '(', ')', ':', '=', ',' })
+            for(char c : new char[]{ ':', '=', ',' })
             {
                 if(c == ch)
                     return null;

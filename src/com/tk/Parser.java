@@ -3,6 +3,7 @@ package com.tk;
 import com.tk.nodes.*;
 import javafx.util.Pair;
 
+import javax.xml.crypto.Data;
 import java.util.LinkedList;
 
 public class Parser
@@ -102,6 +103,7 @@ public class Parser
 
             catch(Exception e)
             {
+                e.printStackTrace();
                 System.out.println(e.getMessage());
                 System.exit(1);
             }
@@ -179,11 +181,14 @@ public class Parser
         if(contentToken == null)
             throw new Exception(error("There is no value for echo"));
 
-        if(checkNextToken("NEW_LINE") == null)
-            throw new Exception(error("Echos have to end with a new line"));
+        if(key.equals("ID") || key.equals("NUMBER"))
+            return new Echo(superNode, expr(superNode, null, contentToken));
 
-        if(key.equals("ID"))
-            return new Echo(superNode, new Variable(value));
+        else
+        {
+            if(checkNextToken("NEW_LINE") == null)
+                throw new Exception(error("Echos have to end with new line."));
+        }
 
         return new Echo(superNode, new Text(value));
     }
@@ -231,7 +236,7 @@ public class Parser
     {
         Pair<String, String> token;
 
-        token = checkNextToken(new String[]{ "STRING", "NUMBER", "BOOLEAN" });
+        token = checkNextToken(new String[]{ "STRING", "NUMBER", "ID", "L_PARENT", "TRUE", "FALSE" });
 
 
         // TODO: This sets variables as string. It is not good.
@@ -240,13 +245,125 @@ public class Parser
             String key = token.getKey();
             String value = token.getValue();
 
-            if(key.equals("STRING") || key.equals("BOOLEAN"))
+            if(key.equals("STRING") || key.equals("TRUE") || key.equals("FALSE"))
                 return new Assignment(superNode, new Variable<String>(id), new Text(value));
 
-            if(key.equals("NUMBER"))
-                return new Assignment(superNode, new Variable<Double>(id), new Expression(Double.parseDouble(value)));
-    }
+            if(key.equals("NUMBER") || key.equals("ID") || key.equals("L_PARENT"))
+                return new Assignment(superNode, new Variable<Double>(id), expr(superNode, null, token));
+        }
 
         throw new Exception(error("Invalid assignment"));
+    }
+
+    private Expression expr(Node superNode, Node leftNode, Pair<String, String> tok) throws Exception
+    {
+        Pair<String, String> token = tok;
+        String key;
+
+        Node left, right = null;
+        left = leftNode;
+
+        char operation = '\0';
+
+        do
+        {
+            if(token == null)
+                token = checkNextToken(new String[]{ "NUMBER", "ID", "PLUS", "MINUS", "MULTIPLY", "DIVIDE", "L_PARENT", "R_PARENT", "NEW_LINE" });
+
+            key = token.getKey();
+
+            // Check if left, right and opetor is set.
+            if(left != null && right != null && operation != '\0')
+            {
+                if(key.equals("MULTIPLY") || key.equals("DIVIDE"))
+                {
+                    if(operation == '+' || operation == '-')
+                    {
+                        Node r = expr(superNode, right, token);
+                        return new Expression(superNode, left, r, operation);
+                    }
+
+                    else
+                    {
+                        left = new Expression(superNode, left, right, operation);
+                        right = null;
+                        operation = '\0';
+                    }
+                }
+
+                else if(!key.equals("R_PARENT"))
+                {
+                    left = new Expression(superNode, left, right, operation);
+                    right = null;
+                    operation = '\0';
+                }
+            }
+
+            if(key.equals("NEW_LINE"))
+                break;
+
+            else if(key.equals("NUMBER"))
+            {
+                if(left == null)
+                    left = new Expression(Double.parseDouble(token.getValue()));
+
+                else if(operation != '\0')
+                    right = new Expression(Double.parseDouble(token.getValue()));
+
+                else throw new Exception(error("Invalid expression"));
+            }
+
+            else if(key.equals("ID"))
+            {
+                if(left == null)
+                    left = new Variable(token.getValue());
+
+                else if(operation != '\0')
+                    right = new Variable(token.getValue());
+
+                else throw new Exception(error("Invalid expression"));
+            }
+
+            else if(key.equals("PLUS") || key.equals("MINUS") || key.equals("MULTIPLY") || key.equals("DIVIDE"))
+            {
+                if(left != null)
+                    operation = token.getValue().charAt(0);
+
+                else throw new Exception(error("Invalid expression"));
+            }
+
+            else if(key.equals("L_PARENT"))
+            {
+                if(left != null && operation != '\0')
+                {
+                    Node r = expr(superNode, null, null);
+                    left = new Expression(superNode, left, r, operation);
+                    right = null;
+                    operation = '\0';
+                }
+
+                else return expr(superNode, null, null);
+            }
+
+            else if(key.equals("R_PARENT"))
+            {
+                if(left != null && right != null && operation != '\0')
+                    return new Expression(superNode, left, right, operation);
+            }
+
+            else throw new Exception(error("Invalid expression"));
+
+            token = checkNextToken(new String[]{ "NUMBER", "ID", "PLUS", "MINUS", "MULTIPLY", "DIVIDE", "L_PARENT", "R_PARENT", "NEW_LINE" });
+        }
+
+        while(!token.getKey().equals("NEW_LINE"));
+
+        if(left != null && right != null && operation != '\0')
+            return new Expression(superNode, left, right, operation);
+
+        else if(left != null && right == null && operation == '\0')
+            return new Expression(superNode, left);
+
+        else throw new Exception(error("Invalid expression"));
     }
 }
