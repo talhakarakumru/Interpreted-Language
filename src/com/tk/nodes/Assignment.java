@@ -26,12 +26,24 @@ public class Assignment extends Node
         else if(right instanceof Text)
             var.setValue(((Text) right).getValue());
 
-        if(superNode != null)
+        // Check if its super nodes or global scope has a variable that has the same name.
+        Variable checkVar = Interpreter.findVariable(superNode, var.getId());
+
+        if(checkVar == null)
         {
-            if(superNode instanceof Function)
-                ((Function) superNode).addVar(var);
+            if(superNode != null)
+            {
+                if(superNode instanceof Function)
+                {
+                    Function f = (Function) superNode;
+                    f.addVar(var);
+                }
+            }
+
+            else Interpreter.globalVarScope.add(var);
         }
 
-        else Interpreter.globalVarScope.add(var);
+        // Re-assign it.
+        else checkVar.setValue(var.getValue());
     }
 }

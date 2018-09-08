@@ -26,39 +26,12 @@ public class Echo extends Node
         {
             Variable variable = (Variable) content;
 
-            System.out.println(variable.getId());
+            Variable checkVar = Interpreter.findVariable(superNode, variable.getId());
 
-            // TODO: Fix this to make sure it gets one more step to another super node.
-            // Check if it has a super node.
-            if(superNode != null)
-            {
-                // Check it has the value
-                if(superNode instanceof Function)
-                {
-                    Function supFunc = (Function) superNode;
+            if(checkVar != null)
+                 System.out.println(checkVar.getValue());
 
-                    for(Variable v : supFunc.getVarScope())
-                    {
-                        if(variable.equals(v))
-                        {
-                            System.out.println(v.getValue());
-                            return;
-                        }
-                    }
-                }
-
-                // Check the global scope.
-                for(Variable v : Interpreter.globalVarScope)
-                {
-                    if(variable.equals(v))
-                    {
-                        System.out.println(v.getValue());
-                        return;
-                    }
-                }
-
-                throw new Exception("Uninitialized variable was used.");
-            }
+            else throw new Exception("Uninitialized variable has been used in echo.");
         }
 
         else if(content instanceof Expression)

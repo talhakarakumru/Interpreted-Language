@@ -40,23 +40,17 @@ public class Expression extends Node
     {
         double val = 0.0f;
 
-        // Check if its super node has the variable.
-        if(superNode instanceof Function)
+        // Check if the variable is valid.
+        Variable checkVar = Interpreter.findVariable(superNode, variable.getId());
+
+        if(checkVar != null)
         {
-            Function f = (Function) superNode;
+            // Check if the variable's value is double type.
+            if(checkVar.getValue() instanceof Double)
+                return (double) checkVar.getValue();
 
-            for(Variable var : ((Function) superNode).getVarScope())
-            {
-                if(variable.equals(var))
-                    return (double) var.getValue();
-            }
+            else throw new Exception("You must only use numbers when you use expressions.");
         }
-
-        // Check the global scope.
-        for(Variable var : Interpreter.globalVarScope)
-            if(variable.equals(var))
-                return (double) var.getValue();
-
 
         throw new Exception("Uninitialized variable has been used.");
     }
@@ -106,7 +100,7 @@ public class Expression extends Node
                 return leftVal * rightVal;
 
             case '/':
-                if(rightVal > 0)
+                if(rightVal != 0)
                     return leftVal / rightVal;
                 else break;
         }

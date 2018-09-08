@@ -51,4 +51,33 @@ public class Interpreter
 
         System.out.println("----------------------------------------------------");
     }
+
+    public static Variable findVariable(Node superNode, String varId)
+    {
+        // Try to find it in its super nodes.
+        while(superNode != null)
+        {
+            if(superNode instanceof Function)
+            {
+                Function f = (Function) superNode;
+
+                for(Variable var : f.getVarScope())
+                {
+                    if(var.equals(new Variable(varId)))
+                        return var;
+                }
+            }
+
+            superNode = superNode.getSuperNode();
+        }
+
+        // Check if global scope has it.
+        for(Variable var : globalVarScope)
+        {
+            if(var.equals(new Variable(varId)))
+                return var;
+        }
+
+        return null;
+    }
 }

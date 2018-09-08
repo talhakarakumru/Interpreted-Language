@@ -1,5 +1,4 @@
 def main():
-    a = 100 * (1 + 2) * 20
-    echo a
-
+    a = 10
+    echo --a * -1
 end

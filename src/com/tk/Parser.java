@@ -104,7 +104,6 @@ public class Parser
             catch(Exception e)
             {
                 e.printStackTrace();
-                System.out.println(e.getMessage());
                 System.exit(1);
             }
         }
@@ -174,14 +173,14 @@ public class Parser
 
     private Echo echo(Node superNode) throws Exception
     {
-        Pair<String, String> contentToken = checkNextToken(new String[]{ "STRING", "NUMBER", "TRUE", "FALSE", "ID" });
+        Pair<String, String> contentToken = checkNextToken(new String[]{ "STRING", "NUMBER", "TRUE", "FALSE", "ID", "MINUS" });
         String key = contentToken.getKey();
         String value = contentToken.getValue();
 
         if(contentToken == null)
             throw new Exception(error("There is no value for echo"));
 
-        if(key.equals("ID") || key.equals("NUMBER"))
+        if(key.equals("ID") || key.equals("NUMBER") || key.equals("MINUS"))
             return new Echo(superNode, expr(superNode, null, contentToken));
 
         else
@@ -236,7 +235,7 @@ public class Parser
     {
         Pair<String, String> token;
 
-        token = checkNextToken(new String[]{ "STRING", "NUMBER", "ID", "L_PARENT", "TRUE", "FALSE" });
+        token = checkNextToken(new String[]{ "STRING", "NUMBER", "ID", "L_PARENT", "TRUE", "FALSE", "MINUS" });
 
 
         // TODO: This sets variables as string. It is not good.
@@ -248,7 +247,7 @@ public class Parser
             if(key.equals("STRING") || key.equals("TRUE") || key.equals("FALSE"))
                 return new Assignment(superNode, new Variable<String>(id), new Text(value));
 
-            if(key.equals("NUMBER") || key.equals("ID") || key.equals("L_PARENT"))
+            else if(key.equals("NUMBER") || key.equals("ID") || key.equals("L_PARENT") || key.equals("MINUS"))
                 return new Assignment(superNode, new Variable<Double>(id), expr(superNode, null, token));
         }
 
@@ -324,12 +323,38 @@ public class Parser
                 else throw new Exception(error("Invalid expression"));
             }
 
-            else if(key.equals("PLUS") || key.equals("MINUS") || key.equals("MULTIPLY") || key.equals("DIVIDE"))
+            else if(key.equals("PLUS") || key.equals("MULTIPLY") || key.equals("DIVIDE"))
             {
                 if(left != null)
                     operation = token.getValue().charAt(0);
 
                 else throw new Exception(error("Invalid expression"));
+            }
+
+            else if(key.equals("MINUS"))
+            {
+                if(left != null)
+                {
+                    if(operation == '\0')
+                        operation = token.getValue().charAt(0);
+
+                    // Make right node negative or positive.
+                    else if(operation == '*' || operation == '/')
+                        left  = new Expression(superNode, left, new Expression(-1), '*');
+
+                    else
+                    {
+                        right = expr(superNode, null, token);
+                        break;
+                    }
+                }
+
+                // Make left negative or positive.
+                else
+                {
+                    left = new Expression(-1);
+                    operation = '*';
+                }
             }
 
             else if(key.equals("L_PARENT"))
@@ -342,13 +367,18 @@ public class Parser
                     operation = '\0';
                 }
 
-                else return expr(superNode, null, null);
+                else left = expr(superNode, null, null);
             }
 
             else if(key.equals("R_PARENT"))
             {
                 if(left != null && right != null && operation != '\0')
                     return new Expression(superNode, left, right, operation);
+
+                else if(left != null && operation == '\0')
+                    return new Expression(superNode, left);
+
+                else throw new Exception(error("Invalid expression"));
             }
 
             else throw new Exception(error("Invalid expression"));
@@ -365,5 +395,6 @@ public class Parser
             return new Expression(superNode, left);
 
         else throw new Exception(error("Invalid expression"));
+
     }
 }
