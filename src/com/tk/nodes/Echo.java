@@ -28,6 +28,16 @@ public class Echo extends Node
             else System.out.println(text.getValue());
         }
 
+        else if(content instanceof MyBoolean)
+        {
+            MyBoolean bool = (MyBoolean) content;
+
+            if(!hasNextLine)
+                System.out.print(bool.getValue());
+
+            else System.out.println(bool.getValue());
+        }
+
         else if(content instanceof Variable)
         {
             Variable variable = (Variable) content;

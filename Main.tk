@@ -1,4 +1,9 @@
 def main():
-    a = 10
-    echo --a * -1
+
+    PI = 3.14
+
+    put "True or False: "
+    put true
+    put false
+
 end

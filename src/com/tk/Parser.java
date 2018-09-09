@@ -3,7 +3,7 @@ package com.tk;
 import com.tk.nodes.*;
 import javafx.util.Pair;
 
-import javax.xml.crypto.Data;
+import java.lang.Boolean;
 import java.util.LinkedList;
 
 public class Parser
@@ -240,15 +240,16 @@ public class Parser
 
         token = checkNextToken(new String[]{ "STRING", "NUMBER", "ID", "L_PARENT", "TRUE", "FALSE", "MINUS" });
 
-
-        // TODO: This sets variables as string. It is not good.
         if(token != null)
         {
             String key = token.getKey();
             String value = token.getValue();
 
-            if(key.equals("STRING") || key.equals("TRUE") || key.equals("FALSE"))
+            if(key.equals("STRING"))
                 return new Assignment(superNode, new Variable<String>(id), new Text(value));
+
+            else if(key.equals("TRUE") || key.equals("FALSE"))
+                return new Assignment(superNode, new Variable<Boolean>(id), new MyBoolean(Boolean.parseBoolean(value)));
 
             else if(key.equals("NUMBER") || key.equals("ID") || key.equals("L_PARENT") || key.equals("MINUS"))
                 return new Assignment(superNode, new Variable<Double>(id), expr(superNode, null, token));

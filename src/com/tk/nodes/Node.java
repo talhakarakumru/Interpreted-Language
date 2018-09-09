@@ -52,6 +52,7 @@ public abstract class Node
         ASSIGNMENT,
         VARIABLE,
         EXPRESSION,
-        TEXT
+        TEXT,
+        BOOLEAN
     }
 }
