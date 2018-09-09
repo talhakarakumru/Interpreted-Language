@@ -80,4 +80,13 @@ public class Interpreter
 
         return null;
     }
+
+    public static boolean isConstant(Variable var)
+    {
+        for(char ch : var.getId().toCharArray())
+            if(Character.isLowerCase(ch))
+                return false;
+
+        return true;
+    }
 }

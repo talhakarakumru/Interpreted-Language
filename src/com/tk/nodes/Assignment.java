@@ -43,7 +43,13 @@ public class Assignment extends Node
             else Interpreter.globalVarScope.add(var);
         }
 
-        // Re-assign it.
-        else checkVar.setValue(var.getValue());
+        // Re-assign it if it is not a constant variable.
+        else
+        {
+            if(!Interpreter.isConstant(checkVar))
+                checkVar.setValue(var.getValue());
+
+            else throw new Exception("You cannot re-assign a constant variable.");
+        }
     }
 }

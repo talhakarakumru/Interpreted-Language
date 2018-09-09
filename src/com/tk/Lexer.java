@@ -30,6 +30,7 @@ public class Lexer
         keywords.put("DEF", "def");
         keywords.put("END", "end");
         keywords.put("ECHO", "echo");
+        keywords.put("PUT", "put");
         keywords.put("IF", "if");
         keywords.put("ELIF", "elif");
         keywords.put("ELSE", "else");

@@ -5,12 +5,14 @@ import com.tk.Interpreter;
 public class Echo extends Node
 {
     private Node content;
+    private boolean hasNextLine;
 
-    public Echo(Node superNode, Node content)
+    public Echo(Node superNode, Node content, boolean hasNextLine)
     {
         super(Type.ECHO, superNode);
 
         this.content = content;
+        this.hasNextLine = hasNextLine;
     }
 
     @Override
@@ -19,7 +21,11 @@ public class Echo extends Node
         if(content instanceof Text)
         {
             Text text = (Text) content;
-            System.out.println(text.getValue());
+
+            if(!hasNextLine)
+                System.out.print(text.getValue());
+
+            else System.out.println(text.getValue());
         }
 
         else if(content instanceof Variable)
@@ -29,13 +35,23 @@ public class Echo extends Node
             Variable checkVar = Interpreter.findVariable(superNode, variable.getId());
 
             if(checkVar != null)
-                 System.out.println(checkVar.getValue());
+            {
+                if(!hasNextLine)
+                    System.out.print(checkVar.getValue());
+
+                else System.out.println(checkVar.getValue());
+            }
 
             else throw new Exception("Uninitialized variable has been used in echo.");
         }
 
         else if(content instanceof Expression)
-            System.out.println(((Expression) content).getValue());
+        {
+            if(!hasNextLine)
+                System.out.print(((Expression) content).getValue());
+
+            else System.out.println(((Expression) content).getValue());
+        }
     }
 
     //region Getters and Setters

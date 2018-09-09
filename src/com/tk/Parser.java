@@ -84,7 +84,10 @@ public class Parser
                 String value = token.getValue();
 
                 if(key.equals("ECHO"))
-                    nodes.add(echo(superNode));
+                    nodes.add(echo(superNode, false));
+
+                else if(key.equals("PUT"))
+                    nodes.add(echo(superNode, true));
 
                 else if(key.equals("ID"))
                     nodes.add(id(superNode, value));
@@ -171,7 +174,7 @@ public class Parser
         return f;
     }
 
-    private Echo echo(Node superNode) throws Exception
+    private Echo echo(Node superNode, boolean hasNextLine) throws Exception
     {
         Pair<String, String> contentToken = checkNextToken(new String[]{ "STRING", "NUMBER", "TRUE", "FALSE", "ID", "MINUS" });
         String key = contentToken.getKey();
@@ -181,7 +184,7 @@ public class Parser
             throw new Exception(error("There is no value for echo"));
 
         if(key.equals("ID") || key.equals("NUMBER") || key.equals("MINUS"))
-            return new Echo(superNode, expr(superNode, null, contentToken));
+            return new Echo(superNode, expr(superNode, null, contentToken), hasNextLine);
 
         else
         {
@@ -189,7 +192,7 @@ public class Parser
                 throw new Exception(error("Echos have to end with new line."));
         }
 
-        return new Echo(superNode, new Text(value));
+        return new Echo(superNode, new Text(value), hasNextLine);
     }
 
     private Node id(Node superNode, String value) throws Exception
@@ -384,6 +387,9 @@ public class Parser
             else throw new Exception(error("Invalid expression"));
 
             token = checkNextToken(new String[]{ "NUMBER", "ID", "PLUS", "MINUS", "MULTIPLY", "DIVIDE", "L_PARENT", "R_PARENT", "NEW_LINE" });
+
+            if(token == null)
+                throw new Exception("Invalid expression.");
         }
 
         while(!token.getKey().equals("NEW_LINE"));
