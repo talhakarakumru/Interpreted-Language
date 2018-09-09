@@ -6,7 +6,7 @@ public class Text extends Node
 
     public Text(String value)
     {
-        super(Type.TEXT, null);
+        super(null);
 
         this.value = value;
     }

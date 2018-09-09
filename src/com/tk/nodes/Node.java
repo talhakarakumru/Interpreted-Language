@@ -4,13 +4,11 @@ import java.util.LinkedList;
 
 public abstract class Node
 {
-    protected Type type;
     protected Node superNode;
     protected LinkedList<Node> subNodes;
 
-    public Node(Type type, Node superNode)
+    public Node(Node superNode)
     {
-        this.type = type;
         this.superNode = superNode;
         this.subNodes = new LinkedList<>();
     }
@@ -23,11 +21,6 @@ public abstract class Node
     }
 
     //region Getters and Setters
-    public Type getType()
-    {
-        return type;
-    }
-
     public Node getSuperNode()
     {
         return superNode;
@@ -43,16 +36,4 @@ public abstract class Node
         this.subNodes = subNodes;
     }
     //endregion
-
-    public enum Type
-    {
-        FUNCTION,
-        ECHO,
-        CALL,
-        ASSIGNMENT,
-        VARIABLE,
-        EXPRESSION,
-        TEXT,
-        BOOLEAN
-    }
 }

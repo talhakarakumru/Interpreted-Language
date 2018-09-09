@@ -12,7 +12,7 @@ public class Expression extends Node
 
     public Expression(Node superNode, Node left, Node right, char operator)
     {
-        super(Type.EXPRESSION, superNode);
+        super(superNode);
 
         this.left = left;
         this.right = right;
@@ -26,7 +26,7 @@ public class Expression extends Node
 
     public Expression(double value)
     {
-        super(Type.EXPRESSION, null);
+        super(null);
 
         this.value = value;
     }

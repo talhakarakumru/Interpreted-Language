@@ -5,9 +5,9 @@ public class Variable <T> extends Node
     private String id;
     private T value;
 
-    public Variable(String id)
+    public Variable(Node superNode, String id)
     {
-        super(Type.VARIABLE, null);
+        super(superNode);
         this.id = id;
     }
 

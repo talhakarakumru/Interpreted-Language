@@ -9,7 +9,7 @@ public class Assignment extends Node
 
     public Assignment(Node superNode, Node left, Node right)
     {
-        super(Type.ASSIGNMENT, superNode);
+        super(superNode);
 
         this.left = left;
         this.right = right;

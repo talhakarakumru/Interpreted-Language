@@ -9,7 +9,7 @@ public class Echo extends Node
 
     public Echo(Node superNode, Node content, boolean hasNextLine)
     {
-        super(Type.ECHO, superNode);
+        super(superNode);
 
         this.content = content;
         this.hasNextLine = hasNextLine;

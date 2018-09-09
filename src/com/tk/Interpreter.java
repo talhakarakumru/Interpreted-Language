@@ -33,7 +33,7 @@ public class Interpreter
 
             try
             {
-                if(node.getType() == Node.Type.FUNCTION)
+                if(node instanceof Function)
                 {
                     if(((Function) node).getId().equals("main"))
                         node.run();
@@ -63,7 +63,7 @@ public class Interpreter
 
                 for(Variable var : f.getVarScope())
                 {
-                    if(var.equals(new Variable(varId)))
+                    if(var.equals(new Variable(superNode, varId)))
                         return var;
                 }
             }
@@ -74,7 +74,7 @@ public class Interpreter
         // Check if global scope has it.
         for(Variable var : globalVarScope)
         {
-            if(var.equals(new Variable(varId)))
+            if(var.equals(new Variable(superNode, varId)))
                 return var;
         }
 

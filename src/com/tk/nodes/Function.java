@@ -9,7 +9,7 @@ public class Function extends Node
 
     public Function(Node superNode, String id)
     {
-        super(Type.FUNCTION, superNode);
+        super(superNode);
 
         this.id = id;
         this.varScope = new LinkedList<>();

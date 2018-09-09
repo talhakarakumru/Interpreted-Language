@@ -186,6 +186,9 @@ public class Parser
         if(key.equals("ID") || key.equals("NUMBER") || key.equals("MINUS"))
             return new Echo(superNode, expr(superNode, null, contentToken), hasNextLine);
 
+        else if(key.equals("TRUE") || key.equals("FALSE"))
+            return new Echo(superNode, new MyBoolean(superNode, Boolean.parseBoolean(value)), hasNextLine);
+
         else
         {
             if(checkNextToken("NEW_LINE") == null)
@@ -246,13 +249,13 @@ public class Parser
             String value = token.getValue();
 
             if(key.equals("STRING"))
-                return new Assignment(superNode, new Variable<String>(id), new Text(value));
+                return new Assignment(superNode, new Variable<String>(superNode, id), new Text(value));
 
             else if(key.equals("TRUE") || key.equals("FALSE"))
-                return new Assignment(superNode, new Variable<Boolean>(id), new MyBoolean(Boolean.parseBoolean(value)));
+                return new Assignment(superNode, new Variable<Boolean>(superNode, id), new MyBoolean(superNode, Boolean.parseBoolean(value)));
 
             else if(key.equals("NUMBER") || key.equals("ID") || key.equals("L_PARENT") || key.equals("MINUS"))
-                return new Assignment(superNode, new Variable<Double>(id), expr(superNode, null, token));
+                return new Assignment(superNode, new Variable<Double>(superNode, id), expr(superNode, null, token));
         }
 
         throw new Exception(error("Invalid assignment"));
@@ -319,10 +322,10 @@ public class Parser
             else if(key.equals("ID"))
             {
                 if(left == null)
-                    left = new Variable(token.getValue());
+                    left = new Variable(superNode, token.getValue());
 
                 else if(operation != '\0')
-                    right = new Variable(token.getValue());
+                    right = new Variable(superNode, token.getValue());
 
                 else throw new Exception(error("Invalid expression"));
             }

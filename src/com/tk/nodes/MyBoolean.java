@@ -4,9 +4,9 @@ public class MyBoolean extends Node
 {
     boolean value;
 
-    public MyBoolean(boolean value)
+    public MyBoolean(Node superNode, boolean value)
     {
-        super(Type.BOOLEAN, null);
+        super(superNode);
 
         this.value = value;
     }

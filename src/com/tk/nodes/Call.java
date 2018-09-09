@@ -10,7 +10,7 @@ public class Call extends Node
 
     public Call(Node superNode, String id)
     {
-        super(Type.CALL, superNode);
+        super(superNode);
 
         this.id = id;
     }
