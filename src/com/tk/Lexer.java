@@ -173,7 +173,7 @@ public class Lexer
         return currentToken = new Pair<>("EOF", "EOF");
     }
 
-    private String number()
+    private String number() throws Exception
     {
         String num = "";
         char ch = code.charAt(currentIndex);
@@ -181,8 +181,16 @@ public class Lexer
 
         while(Character.isDigit(ch) || ch == '.')
         {
-            if(ch == '.' && !dotUsed)
-                num += ch;
+            if(ch == '.')
+            {
+                if(!dotUsed)
+                {
+                    num += ch;
+                    dotUsed = true;
+                }
+
+                else throw new Exception(error("You cannot have multiple dots in numbers."));
+            }
 
             else if(Character.isDigit(ch))
                 num += ch;

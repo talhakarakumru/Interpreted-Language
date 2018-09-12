@@ -26,30 +26,27 @@ public class Assignment extends Node
         else if(right instanceof Text)
             var.setValue(((Text) right).getValue());
 
+        else if(right instanceof MyBoolean)
+            var.setValue(((MyBoolean) right).getValue());
+
+        else if(right instanceof Variable)
+        {
+            Variable rightVar = (Variable) right;
+            var.setValue(rightVar.getValue());
+        }
+
         // Check if its super nodes or global scope has a variable that has the same name.
         Variable checkVar = Interpreter.findVariable(superNode, var.getId());
 
-        if(checkVar == null)
+        if(checkVar != null)
         {
-            if(superNode != null)
-            {
-                if(superNode instanceof Function)
-                {
-                    Function f = (Function) superNode;
-                    f.addVar(var);
-                }
-            }
-
-            else Interpreter.globalVarScope.add(var);
-        }
-
-        // Re-assign it if it is not a constant variable.
-        else
-        {
-            if(!Interpreter.isConstant(checkVar))
+            // Chekc if it is instance of same class.
+            if(var.getValue().getClass().equals(checkVar.getValue().getClass()))
                 checkVar.setValue(var.getValue());
 
-            else throw new Exception("You cannot re-assign a constant variable.");
+            else throw new Exception("You cannot assign with different type of value.");
         }
+
+        else throw new Exception("Invalid assignment.");
     }
 }

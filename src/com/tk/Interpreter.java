@@ -23,9 +23,9 @@ public class Interpreter
 
     public void run()
     {
-        LinkedList<Node> ast = new Parser(this.lexer).buildAST();
-
         System.out.println("OUTPUT: ");
+
+        LinkedList<Node> ast = new Parser(this.lexer).buildAST();
 
         for(Node node : ast)
         {

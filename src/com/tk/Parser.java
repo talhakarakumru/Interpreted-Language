@@ -159,8 +159,8 @@ public class Parser
         if(checkNextToken("COLON") == null)
             throw new Exception(error("Missing colon"));
 
-       if(checkNextToken("NEW_LINE") == null)
-           throw new Exception(error("Functions have to end with a new line"));
+        if(checkNextToken("NEW_LINE") == null)
+            throw new Exception(error("Functions have to end with a new line"));
 
         f = new Function(superNode, idToken.getValue());
         f.setSubNodes(subNodes(f));
@@ -183,8 +183,40 @@ public class Parser
         if(contentToken == null)
             throw new Exception(error("There is no value for echo"));
 
-        if(key.equals("ID") || key.equals("NUMBER") || key.equals("MINUS"))
+        if(key.equals("NUMBER") || key.equals("MINUS"))
             return new Echo(superNode, expr(superNode, null, contentToken), hasNextLine);
+
+        else if(key.equals("ID"))
+        {
+            // Check the variable
+            Variable checkVar = Interpreter.findVariable(superNode, value);
+
+            if(checkVar != null)
+            {
+                if(checkVar.getValue() instanceof Double)
+                    return new Echo(superNode, expr(superNode, null, contentToken), hasNextLine);
+
+                else if(checkVar.getValue() instanceof String)
+                {
+                    // Echo must end with a next line.
+                    if(checkNextToken(new String("NEW_LINE")) == null)
+                        throw new Exception(error("Echos must end with new line"));
+
+                    return new Echo(superNode, new Variable<String>(superNode, value), hasNextLine);
+                }
+
+                else if(checkVar.getValue() instanceof Boolean)
+                {
+                    // Echo must end with a next line.
+                    if(checkNextToken(new String("NEW_LINE")) == null)
+                        throw new Exception(error("Echos must end with new line"));
+
+                    return new Echo(superNode, new Variable<Boolean>(superNode, value), hasNextLine);
+                }
+            }
+
+            else throw new Exception(error("Uninitialized varaible has been used"));
+        }
 
         else if(key.equals("TRUE") || key.equals("FALSE"))
             return new Echo(superNode, new MyBoolean(superNode, Boolean.parseBoolean(value)), hasNextLine);
@@ -210,18 +242,18 @@ public class Parser
             if(key.equals("L_PARENT"))
                 return call(superNode, value);
 
-            // Check if an assignment or a statement.
+                // Check if an assignment or a statement.
             else if(key.equals("EQUALS"))
             {
                 // Statement
                 if(lexer.checkNext(new char[]{ '=' }, true));
 
-                // Assignment
+                    // Assignment
                 else return assignment(superNode, value);
             }
-
-            else throw new Exception(error("Invalid id usage"));
         }
+
+        else throw new Exception(error("Invalid id usage"));
 
         return null;
     }
@@ -248,14 +280,90 @@ public class Parser
             String key = token.getKey();
             String value = token.getValue();
 
+            Assignment asm = null;
+            Variable var = null;
+
             if(key.equals("STRING"))
-                return new Assignment(superNode, new Variable<String>(superNode, id), new Text(value));
+            {
+                // Pre-assignment.
+                var  = new Variable<String>(superNode, id);
+                var.setValue("");
+
+                asm = new Assignment(superNode, var, new Text(value));
+            }
 
             else if(key.equals("TRUE") || key.equals("FALSE"))
-                return new Assignment(superNode, new Variable<Boolean>(superNode, id), new MyBoolean(superNode, Boolean.parseBoolean(value)));
+            {
+                // Pre-assignment.
+                var = new Variable<Boolean>(superNode, id);
+                var.setValue(false);
 
-            else if(key.equals("NUMBER") || key.equals("ID") || key.equals("L_PARENT") || key.equals("MINUS"))
-                return new Assignment(superNode, new Variable<Double>(superNode, id), expr(superNode, null, token));
+                asm = new Assignment(superNode, var, new MyBoolean(superNode, Boolean.parseBoolean(value)));
+            }
+
+            else if(key.equals("NUMBER") || key.equals("L_PARENT") || key.equals("MINUS"))
+            {
+                // Pre-assignment.
+                var = new Variable<Double>(superNode, id);
+                var.setValue(0.0);
+
+                asm = new Assignment(superNode, var, expr(superNode, null, token));
+            }
+
+            else if(key.equals("ID"))
+            {
+                Variable checkVar = Interpreter.findVariable(superNode, value);
+
+                if(checkVar != null)
+                {
+                    if(checkVar.getValue() instanceof Double)
+                    {
+                        // Pre-assignment.
+                        var = new Variable<Double>(superNode, id);
+                        var.setValue(0.0);
+
+                        asm = new Assignment(superNode, var, expr(superNode, null, token));
+                    }
+
+                    else if(checkVar.getValue() instanceof String)
+                    {
+                        // Pre-assignment.
+                        var = new Variable<String>(superNode, id);
+                        var.setValue("");
+
+                        asm = new Assignment(superNode, var, checkVar);
+                    }
+
+                    else if(checkVar.getValue() instanceof Boolean)
+                    {
+                        // Pre-assignment.
+                        var = new Variable<Boolean>(superNode, id);
+                        var.setValue(false);
+
+                        asm = new Assignment(superNode, var, checkVar);
+                    }
+                }
+
+                else throw new Exception(error("Uninitialized variable has been used."));
+            }
+
+            // Add the pre-assigned variable to scope.
+            // If it does not exist.
+            Variable checkVar = Interpreter.findVariable(superNode, id);
+
+            if(checkVar == null)
+            {
+                if(superNode != null)
+                {
+                    if(superNode instanceof Function)
+                        ((Function) superNode).addVar(var);
+                }
+
+                else Interpreter.globalVarScope.add(var);
+            }
+            // -----------------------------------------------------------
+
+            return asm;
         }
 
         throw new Exception(error("Invalid assignment"));
@@ -345,7 +453,7 @@ public class Parser
                     if(operation == '\0')
                         operation = token.getValue().charAt(0);
 
-                    // Make right node negative or positive.
+                        // Make right node negative or positive.
                     else if(operation == '*' || operation == '/')
                         left  = new Expression(superNode, left, new Expression(-1), '*');
 
